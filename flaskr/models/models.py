@@ -1,6 +1,8 @@
 import enum
 
 from flask_sqlalchemy import SQLAlchemy
+from marshmallow import fields
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 # Database instance
 db = SQLAlchemy()
@@ -49,3 +51,33 @@ class User(db.Model):
     name = db.Column(db.String(64))
     password = db.Column(db.String(32))
     albums = db.relationship("Album", cascade="all, delete, delete-orphan")
+
+
+class EnumToDictionary(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        if value is None:
+            return None
+        return {"key": value.name, "value": value.value}
+
+
+class AlbumShcema(SQLAlchemyAutoSchema):
+    format = EnumToDictionary(attribute="format")
+
+    class Meta:
+        model = Album
+        include_relationships = True
+        load_instance = True
+
+
+class SongSchema:
+    class Meta:
+        model = Song
+        include_relationships = True
+        load_instance = True
+
+
+class UserSchema:
+    class Meta:
+        model = User
+        include_relationships = True
+        load_instance = True

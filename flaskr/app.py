@@ -3,7 +3,7 @@
 
 from flaskr import create_app
 
-from .models import Album, Format, Song, User, db
+from .models import Album, AlbumShcema, Format, Song, User, db
 
 # Create app context
 app = create_app("default")
@@ -15,7 +15,7 @@ db.init_app(app)
 db.create_all()
 
 with app.app_context():
-    user = User(name="Juan", password="123456")
+    album_schema = AlbumShcema()
 
     album = Album(
         title="Test",
@@ -24,22 +24,7 @@ with app.app_context():
         format=Format.CASSETTE,
     )
 
-    user.albums.append(album)
-
-    song = Song(title="Test", minutes=2, seconds=30, performer="Juan")
-
-    album.songs.append(song)
-
-    db.session.add(user)
-    db.session.add(song)
+    db.session.add(album)
     db.session.commit()
 
-    print(Album.query.all())
-    print(Album.query.all()[0].songs)
-    print(Song.query.all())
-
-    db.session.delete(user)
-    db.session.commit()
-
-    print(Album.query.all())
-    print(Song.query.all())
+    print([album_schema.dumps(album) for album in Album.query.all()])
