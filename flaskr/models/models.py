@@ -69,14 +69,14 @@ class AlbumShcema(SQLAlchemyAutoSchema):
         load_instance = True
 
 
-class SongSchema:
+class SongSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Song
         include_relationships = True
         load_instance = True
 
 
-class UserSchema:
+class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
         include_relationships = True
