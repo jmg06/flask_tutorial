@@ -1,4 +1,5 @@
 from flask import request
+from flask_jwt_extended import create_access_token, jwt_required
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 
@@ -59,22 +60,32 @@ class SongView(Resource):
 # * User Operations
 class LogInView(Resource):
     def post(self):
-        db_usuario = User.query.filter_by(
-            name=request.json["name"], password=request.json["password"]
-        ).all()
+        db_usuario = User.query.filter(
+            User.name == request.json["name"], User.password == request.json["password"]
+        ).first()
 
-        if db_usuario:
-            return {"message": "User successfully logged in."}, 200
-        else:
+        if db_usuario is None:
             return {"message": "Invalid credentials."}, 401
+        else:
+            access_token = create_access_token(identity=db_usuario.id)
+            return {
+                "status_code": 200,
+                "message": "User successfully logged in.",
+                "access_token": access_token,
+            }
 
 
 class SignInView(Resource):
     def post(self):
         new_user = User(name=request.json["name"], password=request.json["password"])
+        access_token = create_access_token(identity=request.json["name"])
         db.session.add(new_user)
         db.session.commit()
-        return "User successfully created.", 201
+        return {
+            "status_code": 201,
+            "message": "User successfully created.",
+            "access_token": access_token,
+        }
 
     def put(self, user_id):
         db_user = User.query.get_or_404(user_id)
@@ -91,6 +102,7 @@ class SignInView(Resource):
 
 
 class UserAlbumView(Resource):
+    @jwt_required()
     def post(self, user_id):
         new_album = Album(
             title=request.json["title"],
@@ -109,6 +121,7 @@ class UserAlbumView(Resource):
 
         return album_schema.dump(new_album)
 
+    @jwt_required()
     def get(self, user_id):
         db_user = User.query.get_or_404(user_id)
         return [album_schema.dump(album) for album in db_user.albums]

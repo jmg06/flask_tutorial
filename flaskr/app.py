@@ -1,6 +1,8 @@
 # By default, Flask search for this file to use it as the entry point.
 # If want to use a different file name, must have to change a ENV and specify the new name.
 
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
 from flaskr import create_app
@@ -25,6 +27,9 @@ app_context.push()
 db.init_app(app)
 db.create_all()
 
+# CORS Config
+cors = CORS(app)
+
 # Initialize Restful API
 api = Api(app)
 
@@ -35,3 +40,5 @@ api.add_resource(LogInView, "/login")
 api.add_resource(UserAlbumView, "/user/<int:user_id>/albums")
 api.add_resource(AlbumView, "/album/<int:album_id>")
 api.add_resource(AlbumSongView, "/album/<int:album_id>/songs")
+
+jwt = JWTManager(app)
